@@ -1,0 +1,24 @@
+CHANGELOG:
+vmath.inl:
+  * renamed to vmath.cpp
+vmath.cpp: 
+  * line1 added: #include "vmath.h", because couldn't find all the definitions.
+vmath.h:
+  * line 36 deleted. #include "vmath.cpp" was wrong, because .h included .cpp.
+VEdge.h:
+  * line 4 changed from "Vpoint.h" to "VPoint.h" because in GNU systems, upper and lower case name files are different.
+Voronoi.cpp: 
+  * added #include <cmath>
+
+  
+  
+main_old.cpp: deleted
+NVoronoi.vcxproj deleted
+NVoronoi.vcxproj.filters deleted
+NVoronoi.vcxproj.users deleted
+
+
+To compile under GNU/Linux with g++:
+g++ *.cpp -lGL -lGLU -lglut -o voronoi.bin
+
+Then run: ./voronoi.bin
