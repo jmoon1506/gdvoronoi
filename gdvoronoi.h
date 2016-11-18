@@ -3,9 +3,6 @@
 #define GDVORONOI_H
 
 #include "reference.h"
-#include "voronoi/VGraph.h"
-
-using namespace std;
 
 // Godot bindings
 class Voronoi : public Reference {
