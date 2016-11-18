@@ -5,15 +5,14 @@
 #include <algorithm>
 #include <time.h>
 
-
-#include "Voronoi.h"
+#include "VGraph.h"
 #include "VPoint.h"
 
 void display (void);
 void onEF (int n);
 void reshape (int width, int height);
 
-vor::Voronoi * v;
+vor::VGraph * v;
 vor::Vertices * ver; // vrcholy
 vor::Vertices * dir; // smìry, kterými se pohybují
 vor::Edges * edg;	 // hrany diagramu
@@ -25,7 +24,7 @@ int main (int argc, char **argv)
 {
 	using namespace vor;
 
-	v = new Voronoi();
+	v = new VGraph();
 	ver = new Vertices();
 	dir = new Vertices();
 

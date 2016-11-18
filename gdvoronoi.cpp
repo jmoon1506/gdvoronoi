@@ -3,18 +3,40 @@
 #include "gdvoronoi.h"
 #include "globals.h"
 #include "os/os.h"
+#include "VPoint.h"
+#include "math_2d.h"
+#include "ustring.h"
 
 Voronoi::Voronoi() {
 }
 
+Array Voronoi::generate(int n, int w, int h, int seed) {
+	Array result;
+	vor::VGraph v = VGraph();
+	vor::Vertices ver = Vertices();
+
+	srand ( seed );
+	for(int i=0; i<n; i++)
+	{
+		ver.push_back(VPoint( w * (double)rand()/(double)RAND_MAX , h * (double)rand()/(double)RAND_MAX )); 
+	}
+	v->GetEdges(&ver, w, h);
+	vor::Polygons * pol = v->GetPolygons();
+	for(vor::Polygons::iterator i = pol->begin(); i!= pol->end(); ++i)
+	{
+		Dictionary entry;
+		entry[String::utf8("center")] = Vector2((*i)->center->x, (*i)->center->y);
+		Array corners;
+		for (std::list<VPoint *>::iterator j = (*i)->vertices.begin(); j!= (*i)->vertices.end(); ++j) {
+			corners.push_back( Vector2(-w/2+(*j)->x, -h/2+(*j)->y) );
+		}
+		entry[String::utf8("corners")] = corners;
+		result.push_back(entry);
+	}
+	return result;
+}
+
 void Voronoi::_bind_methods() {
-	ObjectTypeDB::bind_method("open", &SQLite::open);
-	ObjectTypeDB::bind_method("prepare", &SQLite::prepare);
-	ObjectTypeDB::bind_method("step", &SQLite::step);
-	ObjectTypeDB::bind_method("step_assoc", &SQLite::step_assoc);
-	ObjectTypeDB::bind_method("fetch_assoc", &SQLite::fetch_assoc);
-	ObjectTypeDB::bind_method("fetch_one", &SQLite::fetch_one);
-	ObjectTypeDB::bind_method("fetch_array", &SQLite::fetch_array);
-	ObjectTypeDB::bind_method("query", &SQLite::query);
+	ObjectTypeDB::bind_method("generate", &Voronoi::generate);
 }
 

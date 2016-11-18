@@ -1,5 +1,5 @@
 
-#include "Voronoi.h"
+#include "VGraph.h"
 #include <iostream>
 #include <algorithm>
 #include <set>
@@ -8,12 +8,18 @@
 
 using namespace vor;
 
-Voronoi::Voronoi()
+VGraph::VGraph()
 {
 	edges = 0;
 }
 
-Edges * Voronoi::GetEdges(Vertices * v, int w, int h)
+VGraph::~VGraph()
+{
+	delete edges;
+	delete polygons;
+}
+
+Edges * VGraph::GetEdges(Vertices * v, int w, int h)
 {
 	places = v;
 	width = w;
@@ -60,7 +66,7 @@ Edges * Voronoi::GetEdges(Vertices * v, int w, int h)
 	return edges;
 }
 
-Polygons * Voronoi::GetPolygons()
+Polygons * VGraph::GetPolygons()
 {
 	std::map<VPoint *, VPolygon *> pol_map;
 	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
@@ -84,7 +90,7 @@ Polygons * Voronoi::GetPolygons()
 	return polygons;
 }
 
-void	Voronoi::InsertParabola(VPoint * p)
+void	VGraph::InsertParabola(VPoint * p)
 {
 	if(!root){root = new VParabola(p); return;}
 
@@ -138,7 +144,7 @@ void	Voronoi::InsertParabola(VPoint * p)
 	CheckCircle(p2);
 }
 
-void	Voronoi::RemoveParabola(VEvent * e)
+void	VGraph::RemoveParabola(VEvent * e)
 {
 	VParabola * p1 = e->arch;
 
@@ -189,7 +195,7 @@ void	Voronoi::RemoveParabola(VEvent * e)
 	CheckCircle(p2);
 }
 
-void	Voronoi::FinishEdge(VParabola * n)
+void	VGraph::FinishEdge(VParabola * n)
 {
 	if(n->isLeaf) {delete n; return;}
 	double mx;
@@ -205,7 +211,7 @@ void	Voronoi::FinishEdge(VParabola * n)
 	delete n;
 }
 
-double	Voronoi::GetXOfEdge(VParabola * par, double y)
+double	VGraph::GetXOfEdge(VParabola * par, double y)
 {
 	VParabola * left = VParabola::GetLeftChild(par);
 	VParabola * right= VParabola::GetRightChild(par);
@@ -238,7 +244,7 @@ double	Voronoi::GetXOfEdge(VParabola * par, double y)
 	return ry;
 }
 
-VParabola * Voronoi::GetParabolaByX(double xx)
+VParabola * VGraph::GetParabolaByX(double xx)
 {
 	VParabola * par = root;
 	double x = 0.0;
@@ -252,7 +258,7 @@ VParabola * Voronoi::GetParabolaByX(double xx)
 	return par;
 }
 
-double	Voronoi::GetY(VPoint * p, double x) // ohnisko, x-souøadnice
+double	VGraph::GetY(VPoint * p, double x) // ohnisko, x-souøadnice
 {
 	double dp = 2 * (p->y - ly);
 	double a1 = 1 / dp;
@@ -262,7 +268,7 @@ double	Voronoi::GetY(VPoint * p, double x) // ohnisko, x-souøadnice
 	return(a1*x*x + b1*x + c1);
 }
 
-void	Voronoi::CheckCircle(VParabola * b)
+void	VGraph::CheckCircle(VParabola * b)
 {
 	VParabola * lp = VParabola::GetLeftParent (b);
 	VParabola * rp = VParabola::GetRightParent(b);
@@ -290,7 +296,7 @@ void	Voronoi::CheckCircle(VParabola * b)
 	queue.push(e);
 }
 
-VPoint * Voronoi::GetEdgeIntersection(VEdge * a, VEdge * b)
+VPoint * VGraph::GetEdgeIntersection(VEdge * a, VEdge * b)
 {
 	double x = (b->g-a->g) / (a->f - b->f);
 	double y = a->f * x + a->g;

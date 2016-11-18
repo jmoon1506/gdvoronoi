@@ -3,8 +3,7 @@
 #define GDVORONOI_H
 
 #include "reference.h"
-#include "ustring.h"
-#include "voronoi/Voronoi.h"
+#include "voronoi/VGraph.h"
 
 using namespace std;
 
@@ -17,8 +16,7 @@ protected:
 
 public:
 	Voronoi();
-    void generate_random_points();
-    void generate_voronoi();
+    Array generate(int n, int w, int h, int seed);
 };
 
 #endif

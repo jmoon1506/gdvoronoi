@@ -27,6 +27,7 @@ public:
 	void AddEdge(VEdge * e) { edges.push_back(e); }
 
 	void SetVertices() {
+		// add vertices from each edge, checking if it already exists
 		for(std::list<VEdge *>::iterator i = edges.begin(); i!= edges.end(); ++i)
 		{
 			bool start_exists = std::any_of( std::begin( vertices ), std::end( vertices ),
@@ -37,7 +38,6 @@ public:
 				vertices.push_back((*i)->start);
 			if (!end_exists)
 				vertices.push_back((*i)->end);
-			// std::cout << (*i)->edges.size() << "\n";
 		}
 		vertices.sort([&](VPoint * a, VPoint * b){
 			if (a->x - center->x >= 0 && b->x - center->x < 0)

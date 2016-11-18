@@ -1,5 +1,5 @@
-#ifndef Voronoi_h
-#define Voronoi_h
+#ifndef VGraph_h
+#define VGraph_h
 
 #include <list>
 #include <queue>
@@ -27,7 +27,7 @@ namespace vor
 		Class for generating the Voronoi diagram
 	*/
 
-	class Voronoi
+	class VGraph
 	{
 	public:
 		
@@ -35,7 +35,8 @@ namespace vor
 			Constructor - without any parameters
 		*/
 
-		Voronoi();
+		VGraph();
+		~VGraph();
 
 		/*
 			The only public function for generating a diagram
