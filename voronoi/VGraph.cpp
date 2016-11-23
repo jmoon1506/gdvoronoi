@@ -17,6 +17,7 @@ VGraph::~VGraph()
 {
 	for(Vertices::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
 	for(Edges::iterator		i = edges->begin(); i != edges->end(); ++i) delete (*i);
+	for(Polygons::iterator	i = polygons->begin(); i != polygons->end(); ++i) delete (*i);
 	delete edges;
 	delete polygons;
 }

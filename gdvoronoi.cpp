@@ -29,9 +29,7 @@ Array Voronoi::generate(int n, int w, int h, int seed) {
 		entry[String::utf8("center")] = Vector2((*i)->center->x, (*i)->center->y);
 		Vector2Array corners;
 		for (std::list<VPoint *>::iterator j = (*i)->vertices.begin(); j!= (*i)->vertices.end(); ++j) {
-			corners.push_back( Vector2(
-				std::min(std::max((*j)->x, 0), w) - w/2,
-				std::min(std::max((*j)->y, 0), h) - h/2 );
+			corners.push_back( Vector2((*j)->x, (*j)->y) );
 		}
 		entry[String::utf8("corners")] = corners;
 		result.push_back(entry);

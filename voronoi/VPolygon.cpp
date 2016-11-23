@@ -1,7 +1,7 @@
 #include "VPolygon.h"
 
 VPolygon::~VPolygon() {
-	for(Vertices::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
+	for(std::list<VPoint *>::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
 }
 
 void VPolygon::SetVertices() {
