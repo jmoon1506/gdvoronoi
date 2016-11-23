@@ -10,6 +10,7 @@
 #include "VParabola.h"
 #include "VEvent.h"
 #include "VPolygon.h"
+#include "VBoundary.h"
 #include <functional>
 
 
@@ -51,7 +52,7 @@ namespace vor
 			All the data structures are managed by this class
 		*/
 
-		Edges *			GetEdges(Vertices * v, int w, int h);
+		Edges *			GetEdges(Vertices * v, double w, double h);
 		Polygons *		GetPolygons();
 
 	private:
@@ -83,6 +84,7 @@ namespace vor
 		std::priority_queue<VEvent *, std::vector<VEvent *>, VEvent::CompareEvent> queue;
 
 		/*
+						ConstrainPoint		: constrain vertices within boundaries
 						InsertParabola		: processing the place event
 						RemoveParabola		: processing the circle event
 						FinishEdge			: recursively finishes all infinite edges in the tree
@@ -91,7 +93,7 @@ namespace vor
 						CheckCircle			: checks the circle event (disappearing) of this parabola
 						GetEdgeInterse
 		*/
-
+		// void 		ConstrainPoint(VPoint * p, double f, double g, double w, double h);
 		void		InsertParabola(VPoint * p);
 		void		RemoveParabola(VEvent * e);
 		void		FinishEdge(VParabola * n);

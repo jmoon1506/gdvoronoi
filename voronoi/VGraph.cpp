@@ -15,11 +15,13 @@ VGraph::VGraph()
 
 VGraph::~VGraph()
 {
+	for(Vertices::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
+	for(Edges::iterator		i = edges->begin(); i != edges->end(); ++i) delete (*i);
 	delete edges;
 	delete polygons;
 }
 
-Edges * VGraph::GetEdges(Vertices * v, int w, int h)
+Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 {
 	places = v;
 	width = w;
@@ -62,7 +64,14 @@ Edges * VGraph::GetEdges(Vertices * v, int w, int h)
 			delete (*i)->neighbour;
 		}
 	}
-	
+
+	// Handle boundary cases
+/*	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
+	{
+		ConstrainPoint((*i)->start, (*i)->f, (*i)->g, w, h);
+		ConstrainPoint((*i)->end, (*i)->f, (*i)->g, w, h);
+	}*/
+
 	return edges;
 }
 
@@ -83,10 +92,28 @@ Polygons * VGraph::GetPolygons()
 		for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) delete (*i);
 		polygons->clear();
 	}
+	
 	for(std::map<VPoint *, VPolygon *>::const_iterator i=pol_map.begin(); i!=pol_map.end(); ++i) {
 		i->second->SetVertices();
 		polygons->push_back( i->second );
 	}
+
+	// std::cout << "polygons done!\n";
+	VBoundaryHorz bottom = VBoundaryHorz(0, true);
+	VBoundaryHorz top = VBoundaryHorz(height, false);
+	VBoundaryVert left = VBoundaryVert(0, true);
+	VBoundaryVert right = VBoundaryVert(width, false);
+/*	std::cout << "Test right: " << right.IsInside(new VPoint(width+100, 30)) << "\n";
+	std::cout << "Test right: " << right.IsInside(new VPoint(60, 30)) << "\n";
+	std::cout << "Test left: " << left.IsInside(new VPoint(-30, 30)) << "\n";
+	std::cout << "Test left: " << left.IsInside(new VPoint(60, 30)) << "\n";*/
+	for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) {
+		(*i)->ClipBoundary(&bottom);
+		(*i)->ClipBoundary(&top);
+		(*i)->ClipBoundary(&left);
+		(*i)->ClipBoundary(&right);
+	}
+	// std::cout << "clipping done!\n";
 	return polygons;
 }
 

@@ -2,6 +2,7 @@
 #define VPolygon_h
 
 #include "VEdge.h"
+#include "VBoundary.h"
 #include <list>
 #include <algorithm>
 
@@ -24,48 +25,16 @@ public:
 	std::list<VPoint *>		vertices;
 
 	VPolygon (VPoint * c) { center = c; }
+	~VPolygon();
 	void AddEdge(VEdge * e) { edges.push_back(e); }
 
-	void SetVertices() {
-		// add vertices from each edge, checking if it already exists
-		for(std::list<VEdge *>::iterator i = edges.begin(); i!= edges.end(); ++i)
-		{
-			bool start_exists = std::any_of( std::begin( vertices ), std::end( vertices ),
-							[&](VPoint * arg){return arg == (*i)->start;} );
-			bool end_exists = std::any_of( std::begin( vertices ), std::end( vertices ),
-							[&](VPoint * arg){return arg == (*i)->end;} );
-			if (!start_exists)
-				vertices.push_back((*i)->start);
-			if (!end_exists)
-				vertices.push_back((*i)->end);
-		}
-		vertices.sort([&](VPoint * a, VPoint * b){
-			if (a->x - center->x >= 0 && b->x - center->x < 0)
-				return true;
-			if (a->x - center->x < 0 && b->x - center->x >= 0)
-				return false;
-			if (a->x - center->x == 0 && b->x - center->x == 0) {
-				if (a->y - center->y >= 0 || b->y - center->y >= 0)
-					return a->y > b->y;
-				return b->y > a->y;
-			}
+	void SetVertices();
+	void ClipBoundary(VBoundary * bound);
 
-			// compute the cross product of vectors (center -> a) x (center -> b)
-			int det = (a->x - center->x) * (b->y - center->y) - (b->x - center->x) * (a->y - center->y);
-			if (det < 0)
-				return true;
-			if (det > 0)
-				return false;
+private:
+	std::list<VPoint *> 	points;	// list of new points created during boundary clipping
 
-			// points a and b are on the same line from the center
-			// check which point is closer to the center
-			int d1 = (a->x - center->x) * (a->x - center->x) + (a->y - center->y) * (a->y - center->y);
-			int d2 = (b->x - center->x) * (b->x - center->x) + (b->y - center->y) * (b->y - center->y);
-			return d1 > d2;		
-		} );
-	};
 };
-
 
 
 
