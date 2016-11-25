@@ -26,10 +26,10 @@ Array Voronoi::generate(int n, int w, int h, int seed) {
 	for(vor::Polygons::iterator i = pol->begin(); i!= pol->end(); ++i)
 	{
 		Dictionary entry;
-		entry[String::utf8("center")] = Vector2((*i)->center->x, (*i)->center->y);
+		entry[String::utf8("center")] = Vector2((float)(*i)->center->x, (float)(*i)->center->y);
 		Vector2Array corners;
 		for (std::list<VPoint *>::iterator j = (*i)->vertices.begin(); j!= (*i)->vertices.end(); ++j) {
-			corners.push_back( Vector2((*j)->x, (*j)->y) );
+			corners.push_back( Vector2((float)(*j)->x, (float)(*j)->y) );
 		}
 		entry[String::utf8("corners")] = corners;
 		result.push_back(entry);

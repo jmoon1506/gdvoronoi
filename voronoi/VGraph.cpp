@@ -66,13 +66,6 @@ Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 		}
 	}
 
-	// Handle boundary cases
-/*	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
-	{
-		ConstrainPoint((*i)->start, (*i)->f, (*i)->g, w, h);
-		ConstrainPoint((*i)->end, (*i)->f, (*i)->g, w, h);
-	}*/
-
 	return edges;
 }
 
@@ -109,10 +102,14 @@ Polygons * VGraph::GetPolygons()
 	std::cout << "Test left: " << left.IsInside(new VPoint(-30, 30)) << "\n";
 	std::cout << "Test left: " << left.IsInside(new VPoint(60, 30)) << "\n";*/
 	for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) {
-		(*i)->ClipBoundary(&bottom);
+/*		(*i)->ClipBoundary(&bottom);
 		(*i)->ClipBoundary(&top);
 		(*i)->ClipBoundary(&left);
-		(*i)->ClipBoundary(&right);
+		(*i)->ClipBoundary(&right);*/
+		if (!(*i)->SanityCheck(width, height)) {
+			delete (*i);
+			polygons->erase(i--);
+		}
 	}
 	// std::cout << "clipping done!\n";
 	return polygons;

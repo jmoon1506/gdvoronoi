@@ -13,7 +13,8 @@ public:
 };
 class VBoundaryHorz : public VBoundary {
 public:
-	using VBoundary::VBoundary;
+	VBoundaryHorz(double a, bool gt) : VBoundary(a, gt) {}
+	// using VBoundary::VBoundary;
 	bool IsInside(VPoint * p) { return greaterThan ? p->y > pos : p->y < pos; }
 	VPoint * Intersect(VPoint * p0, VPoint * p1) {
 		double xslope = (p0->x - p1->x) / (p0->y - p1->y);
@@ -23,7 +24,8 @@ public:
 };
 class VBoundaryVert : public VBoundary {
 public:
-	using VBoundary::VBoundary;
+	VBoundaryVert(double a, bool gt): VBoundary(a, gt) {}
+	// using VBoundary::VBoundary;
 	bool IsInside(VPoint * p) { return greaterThan ? p->x > pos : p->x < pos; }
 	VPoint * Intersect(VPoint * p0, VPoint * p1) {
 		double yslope = (p0->y - p1->y) / (p0->x - p1->x);

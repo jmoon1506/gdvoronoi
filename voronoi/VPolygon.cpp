@@ -43,60 +43,6 @@ void VPolygon::SetVertices() {
 	} );
 }
 
-/*void VPolygon::ClipBoundaries(double w, double h) {
-	std::list<VPoint *> new_vertices;
-	std::list<VPoint *>::iterator prev=vertices.end();
-	prev--;
-	auto WithinTop = [&w, &h](VPoint * p) { return p->y < h; };
-	auto WithinBottom = [&w, &h](VPoint * p) { return p->y > 0; };
-	auto WithinLeft = [&w, &h](VPoint * p) { return p->x > 0; };
-	auto WithinRight = [&w, &h](VPoint * p) { return p->x < w; };
-	auto IntersectTop = [&](VPoint * p0, VPoint * p1) {
-		double xslope = (p0->x - p1->x) / (p0->y - p1->y);
-		VPoint * r = new VPoint(h, p0->x + xslope * (h - p0->y));
-		return r;
-	};
-	auto IntersectBottom = [&](VPoint * p0, VPoint * p1) {
-		double xslope = (p0->x - p1->x) / (p0->y - p1->y);
-		VPoint * r = new VPoint(0, p0->x + xslope * (0 - p0->y));
-		return r;
-	};
-	auto IntersectLeft = [&](VPoint * p0, VPoint * p1) {
-		double yslope = (p0->y - p1->y) / (p0->x - p1->x);
-		VPoint * r = new VPoint(0, p0->y + yslope * (0 - p0->x));
-		return r;
-	};
-	auto IntersectRight = [&](VPoint * p0, VPoint * p1) {
-		double yslope = (p0->y - p1->y) / (p0->x - p1->x);
-		VPoint * r = new VPoint(w, p0->y + yslope * (w - p0->x));
-		return r;
-	};
-	for(std::list<VPoint *>::iterator cur=vertices.begin(); cur!=vertices.end(); prev=cur, ++cur)
-	{
-		if (WithinTop(*cur))
-		{
-			if (WithinTop(*prev))
-			{
-				new_vertices.push_back(*cur);
-			}
-			else
-			{
-				VPoint * r = IntersectTop(*prev, *cur);
-				points.push_back(r);
-				new_vertices.push_back(r);
-				new_vertices.push_back(*cur);
-			}
-		}
-		else if (WithinTop(*prev))
-		{
-			VPoint * r = IntersectTop(*prev, *cur);
-			points.push_back(r);
-			new_vertices.push_back(r);
-		}
-	}
-	vertices = new_vertices;
-}*/
-
 void VPolygon::ClipBoundary(VBoundary * bound) {
 	std::list<VPoint *> new_vertices;
 	std::list<VPoint *>::iterator prev=vertices.end();
@@ -125,5 +71,28 @@ void VPolygon::ClipBoundary(VBoundary * bound) {
 		}
 	}
 	vertices = new_vertices;
+}
+
+bool VPolygon::SanityCheck(double w, double h) {
+	std::list<VPoint *> new_vertices;
+	for(std::list<VPoint *>::iterator cur=vertices.begin(); cur!=vertices.end(); ++cur)
+	{
+		// cull weird error (???)
+		if ((*cur)->x == w and (*cur)->y < -10*h)
+		{
+			continue;
+			// (*cur)->y = -(*cur)->y;
+		}
+		else
+		{
+			new_vertices.push_back(*cur);
+		}
+	}
+	// check if still polygon
+	if (new_vertices.size() < 3) {
+		return false;
+	}
+	vertices = new_vertices;
+	return true;
 }
 
