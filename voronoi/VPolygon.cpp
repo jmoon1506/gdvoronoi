@@ -78,7 +78,7 @@ bool VPolygon::SanityCheck(double w, double h) {
 	for(std::list<VPoint *>::iterator cur=vertices.begin(); cur!=vertices.end(); ++cur)
 	{
 		// cull weird error (???)
-		if ((*cur)->x == w and (*cur)->y < -10*h)
+		if ((*cur)->x == w && (*cur)->y < -10*h)
 		{
 			continue;
 			// (*cur)->y = -(*cur)->y;

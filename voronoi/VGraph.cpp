@@ -5,12 +5,14 @@
 #include <set>
 #include <cmath>
 #include <map>
+#include <vector>
 
 using namespace vor;
 
 VGraph::VGraph()
 {
 	edges = 0;
+	coherent = true;
 }
 
 VGraph::~VGraph()
@@ -28,6 +30,7 @@ Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 	width = w;
 	height = h;
 	root = 0;
+	coherent = true;
 
 	if(!edges) edges = new Edges();
 	else 
@@ -66,6 +69,141 @@ Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 		}
 	}
 
+	/*
+		Create map of Voronoi points to boundary vertices.
+	*/
+
+	std::vector<VBoundary*> boundaries;
+	boundaries.push_back(new VBoundaryHorz(0, true));
+	boundaries.push_back(new VBoundaryHorz(height, false));
+	boundaries.push_back(new VBoundaryVert(0, true));
+	boundaries.push_back(new VBoundaryVert(width, false));
+
+	std::map<VPoint *, std::vector<VPoint *>> bound_map;
+
+	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
+	{
+		for(std::vector<VBoundary*>::iterator j = boundaries.begin(); j != boundaries.end(); ++j)
+		{
+			if ((*j)->IsInside((*i)->start))
+			{
+				if (!(*j)->IsInside((*i)->end)) {
+
+					(*i)->end = (*j)->Intersect((*i)->start, (*i)->end);
+
+					if ((*i)->end->x >= 0 && (*i)->end->x <= w && (*i)->end->y >= 0 && (*i)->end->y <= h) {
+						if (bound_map.find((*i)->left) == bound_map.end()) {
+							bound_map[(*i)->left] = { (*i)->end };
+						} else {
+							bound_map[(*i)->left].push_back((*i)->end);
+						}
+
+						if (bound_map.find((*i)->right) == bound_map.end()) {
+							bound_map[(*i)->right] = { (*i)->end };
+						} else {
+							bound_map[(*i)->right].push_back((*i)->end);
+						}
+					}
+				}
+			}
+			else if ((*j)->IsInside((*i)->end)) {
+				(*i)->start = (*j)->Intersect((*i)->start, (*i)->end);
+
+				if ((*i)->start->x >= 0 && (*i)->start->x <= w && (*i)->start->y >= 0 && (*i)->start->y <= h) {
+					if (bound_map.find((*i)->left) == bound_map.end()) {
+						bound_map[(*i)->left] = { (*i)->start };
+					} else {
+						bound_map[(*i)->left].push_back((*i)->start);
+					}
+
+					if (bound_map.find((*i)->right) == bound_map.end()) {
+						bound_map[(*i)->right] = { (*i)->start };
+					} else {
+						bound_map[(*i)->right].push_back((*i)->start);
+					}
+				}
+			}
+			else {
+				delete (*i);
+				edges->erase(i--);
+				break;
+			}
+		}
+	}
+	for(std::vector<VBoundary*>::iterator i = boundaries.begin(); i != boundaries.end(); ++i) delete (*i);
+
+	/*
+		Convert boundary vertices to edges.
+	*/
+
+	for(std::map<VPoint *, std::vector<VPoint *>>::const_iterator i=bound_map.begin(); i!=bound_map.end(); ++i) {
+		if (i->second.size() == 2) {
+			if (!((i->second[0]->x == i->second[1]->x) || (i->second[0]->y == i->second[1]->y))) {
+				double px, py;
+				if (i->second[0]->x == 0 || i->second[1]->x == 0) {
+					px = 0;
+				} else {
+					px = w;
+				}
+				if (i->second[0]->y == 0 || i->second[1]->y == 0) {
+					py = 0;
+				} else {
+					py = h;
+				}
+				VPoint * corner = new VPoint(px, py);
+				points.push_back(corner);
+				VEdge * boundary_edge1 = new VEdge(i->second[0], corner, i->first, NULL);
+				edges->push_back(boundary_edge1);
+				VEdge * boundary_edge2 = new VEdge(i->second[1], corner, i->first, NULL);
+				edges->push_back(boundary_edge2);
+				// std::cout << "Corner!\n";
+			}
+			else {
+				VEdge * boundary_edge = new VEdge(i->second[0], i->second[1], i->first, NULL);
+				edges->push_back(boundary_edge);
+				// std::cout << "Edge!\n";
+			}
+		} else if (i->second.size() == 4) {
+			int h1 = -1;
+			int h2 = -1;
+			int v1 = -1;
+			int v2 = -1;
+			for(int k = 0; k < 4; ++k){
+				if (i->second[k]->x == 0 || i->second[k]->x == w) {
+					if (h1 == -1) h1 = k;
+					else h2 = k;
+				} else if (i->second[k]->y == 0 || i->second[k]->y == h) {
+					if (v1 == -1) v1 = k;
+					else v2 = k;
+				} else {
+					std::cout << "Invalid boundary straddling vertex\n";
+				}
+			}
+
+			if (h1 == -1 || h2 == -1 || v1 == -1 || v2 == -1) {
+				std::cout << "Invalid boundary straddling vertices\n";
+				std::cout << "h1: " << h1 << ", h2: " << h2 << ", v1: " << v1 << ", v2: " << v2 << "\n";
+				for(int k = 0; k < 4; ++k){
+					std::cout << i->second[k]->x << ", " << i->second[k]->y << "\n";
+				}
+				coherent = false;
+			} else {
+				VEdge * boundary_edge1 = new VEdge(i->second[h1], i->second[h2], i->first, NULL);
+				edges->push_back(boundary_edge1);
+				VEdge * boundary_edge2 = new VEdge(i->second[v1], i->second[v2], i->first, NULL);
+				edges->push_back(boundary_edge2);
+			}
+		} else {
+			std::cout << "Error: Boundary edge has " << i->second.size() << " vertices.\n";
+			std::cout << "Location: " << -1.0 + 2*i->first->x/w << ", " << -1.0 + 2*i->first->y/h << "\n";
+			std::cout << "Vertices: \n";
+			for(auto k = i->second.begin(); k != i->second.end(); ++k) {
+				std::cout << -1.0 + 2*(*k)->x/w << ", " << -1.0 + 2*(*k)->y/h << "\n";
+			}
+			coherent = false;
+		}
+	}
+
 	return edges;
 }
 
@@ -74,10 +212,14 @@ Polygons * VGraph::GetPolygons()
 	std::map<VPoint *, VPolygon *> pol_map;
 	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
 	{
-		if(!pol_map[(*i)->left]){ pol_map[(*i)->left] = new VPolygon((*i)->left); }
-		pol_map[(*i)->left]->AddEdge(*i);
-		if(!pol_map[(*i)->right]){ pol_map[(*i)->right] = new VPolygon((*i)->right); }
-		pol_map[(*i)->right]->AddEdge(*i);
+		if ((*i)->left != NULL) {
+			if(!pol_map[(*i)->left]){ pol_map[(*i)->left] = new VPolygon((*i)->left); }
+			pol_map[(*i)->left]->AddEdge(*i);
+		}
+		if ((*i)->right != NULL) {
+			if(!pol_map[(*i)->right]){ pol_map[(*i)->right] = new VPolygon((*i)->right); }
+			pol_map[(*i)->right]->AddEdge(*i);
+		}
 	}
 
 	if(!polygons) polygons = new Polygons();
@@ -93,24 +235,21 @@ Polygons * VGraph::GetPolygons()
 	}
 
 	// std::cout << "polygons done!\n";
-	VBoundaryHorz bottom = VBoundaryHorz(0, true);
+/*	VBoundaryHorz bottom = VBoundaryHorz(0, true);
 	VBoundaryHorz top = VBoundaryHorz(height, false);
 	VBoundaryVert left = VBoundaryVert(0, true);
 	VBoundaryVert right = VBoundaryVert(width, false);
-/*	std::cout << "Test right: " << right.IsInside(new VPoint(width+100, 30)) << "\n";
-	std::cout << "Test right: " << right.IsInside(new VPoint(60, 30)) << "\n";
-	std::cout << "Test left: " << left.IsInside(new VPoint(-30, 30)) << "\n";
-	std::cout << "Test left: " << left.IsInside(new VPoint(60, 30)) << "\n";*/
+
 	for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) {
-/*		(*i)->ClipBoundary(&bottom);
+		(*i)->ClipBoundary(&bottom);
 		(*i)->ClipBoundary(&top);
 		(*i)->ClipBoundary(&left);
-		(*i)->ClipBoundary(&right);*/
+		(*i)->ClipBoundary(&right);
 		if (!(*i)->SanityCheck(width, height)) {
 			delete (*i);
 			polygons->erase(i--);
 		}
-	}
+	}*/
 	// std::cout << "clipping done!\n";
 	return polygons;
 }

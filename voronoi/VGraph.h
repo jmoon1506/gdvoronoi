@@ -54,6 +54,7 @@ namespace vor
 
 		Edges *			GetEdges(Vertices * v, double w, double h);
 		Polygons *		GetPolygons();
+		bool 			IsCoherent() { return coherent; }
 
 	private:
 
@@ -64,6 +65,7 @@ namespace vor
 						height		: height of the diagram
 						root		: the root of the tree, that represents a beachline sequence
 						ly			: current "y" position of the line (see Fortune's algorithm)
+						coherent 	: indicates whether edges messed up in GetEdges()
 		*/
 
 		Vertices *		places;
@@ -72,6 +74,7 @@ namespace vor
 		double			width, height;
 		VParabola *		root;
 		double			ly;
+		bool 			coherent;
 
 		/*
 						deleted		: set  of deleted (false) Events (since we can not delete from PriorityQueue
