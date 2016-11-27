@@ -1,3 +1,4 @@
 *.pyc
 *.o
-*.bin*.obj
+*.bin
+*.obj
