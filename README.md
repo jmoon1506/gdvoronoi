@@ -18,4 +18,5 @@ compile~
 
 ## Functions:
 ```
-Array generate( int n, int w, int h, int seed )
+Array generate( int n, double w, double h, int seed )
+Array generate_from_points( Vector2Array points, double w, double h ) 
