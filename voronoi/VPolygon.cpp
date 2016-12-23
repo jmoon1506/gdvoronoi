@@ -1,7 +1,7 @@
 #include "VPolygon.h"
 
 VPolygon::~VPolygon() {
-	for(std::list<VPoint *>::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
+	// for(std::list<VPoint *>::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
 }
 
 void VPolygon::SetVertices() {
@@ -43,7 +43,7 @@ void VPolygon::SetVertices() {
 	} );
 }
 
-void VPolygon::ClipBoundary(VBoundary * bound) {
+/*void VPolygon::ClipBoundary(VBoundary * bound) {
 	std::list<VPoint *> new_vertices;
 	std::list<VPoint *>::iterator prev=vertices.end();
 	prev--;
@@ -94,5 +94,5 @@ bool VPolygon::SanityCheck(double w, double h) {
 	}
 	vertices = new_vertices;
 	return true;
-}
+}*/
 

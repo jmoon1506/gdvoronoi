@@ -20,11 +20,13 @@ VGraph::~VGraph()
 	for(Vertices::iterator	i = points.begin(); i != points.end(); ++i) delete (*i);
 	for(Edges::iterator		i = edges->begin(); i != edges->end(); ++i) delete (*i);
 	for(Polygons::iterator	i = polygons->begin(); i != polygons->end(); ++i) delete (*i);
+	for(Vertices::iterator  i = lloyd_vertices->begin(); i != lloyd_vertices->end(); ++i) delete (*i);
+	delete lloyd_vertices;
 	delete edges;
 	delete polygons;
 }
 
-Edges * VGraph::GetEdges(Vertices * v, double w, double h)
+void VGraph::GetEdges(Vertices * v, double w, double h)
 {
 	places = v;
 	width = w;
@@ -176,16 +178,17 @@ Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 					if (v1 == -1) v1 = k;
 					else v2 = k;
 				} else {
-					std::cout << "Invalid boundary straddling vertex\n";
+					std::cout << "Error: Invalid boundary straddling vertex.\n";
+					coherent = false;
 				}
 			}
 
 			if (h1 == -1 || h2 == -1 || v1 == -1 || v2 == -1) {
-				std::cout << "Invalid boundary straddling vertices\n";
-				std::cout << "h1: " << h1 << ", h2: " << h2 << ", v1: " << v1 << ", v2: " << v2 << "\n";
+				std::cout << "Error: Invalid boundary straddling vertices.\n";
+/*				std::cout << "h1: " << h1 << ", h2: " << h2 << ", v1: " << v1 << ", v2: " << v2 << "\n";
 				for(int k = 0; k < 4; ++k){
 					std::cout << i->second[k]->x << ", " << i->second[k]->y << "\n";
-				}
+				}*/
 				coherent = false;
 			} else {
 				VEdge * boundary_edge1 = new VEdge(i->second[h1], i->second[h2], i->first, NULL);
@@ -194,21 +197,26 @@ Edges * VGraph::GetEdges(Vertices * v, double w, double h)
 				edges->push_back(boundary_edge2);
 			}
 		} else {
-			std::cout << "Error: Boundary edge has " << i->second.size() << " vertices.\n";
-			std::cout << "Location: " << -1.0 + 2*i->first->x/w << ", " << -1.0 + 2*i->first->y/h << "\n";
+			std::cout << "Error: Boundary edge has " << i->second.size() << " vertices (should have 2).\n";
+/*			std::cout << "Location: " << -1.0 + 2*i->first->x/w << ", " << -1.0 + 2*i->first->y/h << "\n";
 			std::cout << "Vertices: \n";
 			for(auto k = i->second.begin(); k != i->second.end(); ++k) {
 				std::cout << -1.0 + 2*(*k)->x/w << ", " << -1.0 + 2*(*k)->y/h << "\n";
-			}
+			}*/
 			coherent = false;
 		}
+		std::cout << "Location: " << -1.0 + 2*i->first->x/w << ", " << -1.0 + 2*i->first->y/h << "\n";
+		std::cout << "Vertices: \n";
+		for(auto k = i->second.begin(); k != i->second.end(); ++k) {
+			std::cout << -1.0 + 2*(*k)->x/w << ", " << -1.0 + 2*(*k)->y/h << "\n";
+		}
 	}
-
-	return edges;
 }
 
-Polygons * VGraph::GetPolygons()
+Polygons * VGraph::CalculatePolygons(Vertices * v, double w, double h)
 {
+	GetEdges(v, w, h);
+
 	std::map<VPoint *, VPolygon *> pol_map;
 	for(Edges::iterator i = edges->begin(); i != edges->end(); ++i)
 	{
@@ -233,25 +241,33 @@ Polygons * VGraph::GetPolygons()
 		i->second->SetVertices();
 		polygons->push_back( i->second );
 	}
-
-	// std::cout << "polygons done!\n";
-/*	VBoundaryHorz bottom = VBoundaryHorz(0, true);
-	VBoundaryHorz top = VBoundaryHorz(height, false);
-	VBoundaryVert left = VBoundaryVert(0, true);
-	VBoundaryVert right = VBoundaryVert(width, false);
-
-	for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) {
-		(*i)->ClipBoundary(&bottom);
-		(*i)->ClipBoundary(&top);
-		(*i)->ClipBoundary(&left);
-		(*i)->ClipBoundary(&right);
-		if (!(*i)->SanityCheck(width, height)) {
-			delete (*i);
-			polygons->erase(i--);
-		}
-	}*/
-	// std::cout << "clipping done!\n";
 	return polygons;
+}
+
+Vertices * VGraph::LloydRelaxation() {
+	if (!lloyd_vertices) {
+		lloyd_vertices = new Vertices;
+	} else {
+		for(Vertices::iterator i = lloyd_vertices->begin(); i != lloyd_vertices->end(); ++i) delete (*i);
+		lloyd_vertices->clear();
+	}
+	for(Polygons::iterator i = polygons->begin(); i != polygons->end(); ++i) {
+		double x = 0;
+		double y = 0;
+		for(std::list<VPoint *>::iterator j = (*i)->vertices.begin(); j != (*i)->vertices.end(); ++j) {
+			x += (*j)->x;
+			y += (*j)->y;
+		}
+		x = x / (*i)->vertices.size();
+		y = y / (*i)->vertices.size();
+		lloyd_vertices->push_back(new VPoint(x, y));
+	}
+	CalculatePolygons(lloyd_vertices, width, height);
+	return lloyd_vertices;
+}
+
+void VGraph::EaseCorners() {
+	
 }
 
 void	VGraph::InsertParabola(VPoint * p)

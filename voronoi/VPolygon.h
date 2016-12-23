@@ -8,20 +8,14 @@
 
 class VPoint;
 class VEdge;
-/*
-    A class that stores a Voronoi region as a polygon
 
-    center      : pointer to center point
-    corners     : list of corner points
-    neighbors	: list of adjacent regions
-*/
 class VPolygon
 {
 public:
 
 	VPoint *				center;
 	std::list<VEdge *>		edges;
-	// std::list<VPolygon *> 	neighbors;
+	std::list<VPolygon *> 	neighbors;
 	std::list<VPoint *>		vertices;
 
 	VPolygon (VPoint * c) { center = c; }
@@ -35,7 +29,7 @@ public:
 
 		bound	: pointer to virtual VBoundary
 	*/
-	void ClipBoundary(VBoundary * bound);
+	// void ClipBoundary(VBoundary * bound);
 
 	/*
 		Check to remove algorithm errors, vertices >= 3
@@ -43,11 +37,11 @@ public:
 		w		: graph width
 		h 		: graph height
 	*/
-	bool SanityCheck(double w, double h);
+	// bool SanityCheck(double w, double h);
 
-private:
+/*private:
 	std::list<VPoint *> 	points;	// list of new points created during boundary clipping
-
+*/
 };
 
 

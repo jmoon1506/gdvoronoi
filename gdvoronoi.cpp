@@ -16,21 +16,36 @@ Array Voronoi::generate(int n, double w, double h, int seed) {
 	vor::VGraph * v = new vor::VGraph();
 	vor::Vertices * ver = new vor::Vertices();
 	srand ( seed );
+
+	double workingWidth, workingHeight;
+	if(w < 10000 || h < 10000) {
+		workingWidth = 10000;
+		workingHeight = workingWidth * h / w;
+	} else {
+		workingWidth = w;
+		workingHeight = h;
+	}
+
 	for(int i=0; i<n; i++)
 	{
-		ver->push_back(new VPoint( w * (double)rand()/(double)RAND_MAX , h * (double)rand()/(double)RAND_MAX )); 
+		ver->push_back(new VPoint( workingWidth * (double)rand()/(double)RAND_MAX , workingHeight * (double)rand()/(double)RAND_MAX )); 
 	}
-	v->GetEdges(ver, w, h);
-	if (v->IsCoherent()) {
-		vor::Polygons * pol = v->GetPolygons();
 
+	vor::Polygons * pol = v->CalculatePolygons(ver, workingWidth, workingHeight);
+	std::cout << "generated graph!\n";
+	// vor::Polygons * pol = v->CalculatePolygons(ver, w, h);
+	if (v->IsCoherent()) {
 		for(vor::Polygons::iterator i = pol->begin(); i!= pol->end(); ++i)
 		{
 			Dictionary entry;
-			entry[String::utf8("center")] = Vector2((*i)->center->x, (*i)->center->y);
+			// entry[String::utf8("center")] = Vector2((*i)->center->x, (*i)->center->y);
+			entry[String::utf8("center")] = Vector2((*i)->center->x * w / workingWidth,
+				(*i)->center->y * h / workingHeight);
 			Vector2Array corners;
 			for (std::list<VPoint *>::iterator j = (*i)->vertices.begin(); j!= (*i)->vertices.end(); ++j) {
-				corners.push_back( Vector2((*j)->x, (*j)->y) );
+				// corners.push_back( Vector2((*j)->x, (*j)->y));
+				corners.push_back( Vector2((*j)->x * w / workingWidth,
+					(*j)->y) * h / workingHeight);
 			}
 			entry[String::utf8("corners")] = corners;
 			result.push_back(entry);
@@ -54,8 +69,7 @@ Array Voronoi::generate_from_points(Vector2Array points, double w, double h) {
 	{
 		ver->push_back(new VPoint(points[i].x, points[i].y)); 
 	}
-	v->GetEdges(ver, w, h);
-	vor::Polygons * pol = v->GetPolygons();
+	vor::Polygons * pol = v->CalculatePolygons(ver, w, w);
 	for(vor::Polygons::iterator i = pol->begin(); i!= pol->end(); ++i)
 	{
 		Dictionary entry;
